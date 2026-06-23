@@ -1,24 +1,66 @@
-# VoidRP Daily Quests
+# 📜 VoidRP Daily Quests
 
-Paper 1.21.1 плагин — система ежедневных квестов, испытаний героя и заданий Торговца Артефактами.
+> Paper 1.21.1 плагин — ежедневные квесты, испытания героя и задания Торговца Артефактами.
 
-## Возможности
+![Paper](https://img.shields.io/badge/Paper-1.21.1-00AF54)
+![Kotlin](https://img.shields.io/badge/Kotlin-2.x-7F52FF?logo=kotlin&logoColor=white)
+![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
+![Vault](https://img.shields.io/badge/soft--depend-Vault-yellow)
+![License](https://img.shields.io/badge/license-proprietary-red)
 
-- **Ежедневные квесты** — каждый день игрок получает N случайных квестов из пула
-- **Испытание Героя** (`/bossquest`) — один сложный квест на 3 дня с повышенной наградой
-- **Торговец Артефактами** (`/delivery`) — задания на доставку предметов
-- Закрепление квеста на экране (`/questtrack`) для отслеживания прогресса
-- Автосброс квестов в заданный час суток
-- GUI через NPC и команды
-- Soft-depend на Vault (денежные награды)
+---
 
-## Требования
+## 🗺️ Место в экосистеме
 
-- Paper / Purpur 1.21.1
-- Java 21
-- (опционально) Vault
+```
+  Игрок выполняет действие в игре
+        │
+  voidrp-daily-quests
+        │ QuestCompleteEvent
+        ├──► voidrp-battlepass (XP за выполнение квеста)
+        │
+        │ POST /api/v1/daily-quests/* (X-Game-Auth-Secret)
+        ▼
+  minecraft-backend ←→ voidrp-site
+```
 
-## Сборка
+---
+
+## ✨ Возможности
+
+### Ежедневные квесты
+- Каждый день игрок получает **N случайных квестов** из настраиваемого пула
+- Типы заданий: убийства, добыча, крафт, торговля, путешествие, доставка
+- Автосброс квестов в заданный час суток (настраивается)
+- Денежные и предметные награды через Vault
+
+### Испытание Героя (`/bossquest`)
+- Один сложный квест на **3 дня** с повышенной наградой
+- Уникальный пул сложных заданий
+- Отдельный NPC для получения и сдачи
+
+### Торговец Артефактами (`/delivery`)
+- Задания на доставку конкретных предметов в определённое место
+- Ротация заданий по таймеру
+
+### Интерфейс
+- Закрепление активного квеста на экране (`/questtrack`)
+- GUI через NPC
+- Команды для всех типов заданий
+
+---
+
+## 📋 Требования
+
+| Компонент | Версия |
+|---|---|
+| Paper / Mohist | 1.21.1 |
+| Java | 21 |
+| Vault | опционально (денежные награды) |
+
+---
+
+## 🚀 Сборка и установка
 
 ```bash
 cd voidrp_daily_quests
@@ -26,59 +68,35 @@ cd voidrp_daily_quests
 # → build/libs/voidrp-daily-quests-*.jar
 ```
 
-## Установка
-
-1. Положить jar в `plugins/`
+1. Скопировать jar в `plugins/`
 2. Перезапустить сервер
 3. Настроить `plugins/VoidRpDailyQuests/config.yml`
+4. Задать пул заданий в `quests.yml`
 
-## Конфигурация (`config.yml`)
+---
 
-```yaml
-quests-per-day: 3
-reset-hour: 0
-reward-multiplier: 1.0
-
-npc-names:
-  - "§6Квестодатель"
-
-delivery-npc-names:
-  - "§5Торговец Артефактами"
-```
-
-## Команды
+## 🛠️ Команды
 
 | Команда | Описание |
 |---|---|
-| `/dq` | Открыть GUI ежедневных квестов |
-| `/bossquest` | Открыть Испытание Героя |
-| `/delivery` | Открыть задания Торговца |
-| `/questtrack` | Закрепить/открепить квест на экране |
-| `/dqadmin reset <player>` | Сбросить квесты игрока |
-| `/dqadmin info <player>` | Информация о квестах игрока |
-| `/bqadmin reset <player>` | Сбросить испытание героя |
-| `/bqadmin info <player>` | Информация об испытании |
+| `/quests` | Открыть список своих квестов |
+| `/questtrack` | Закрепить/открепить активный квест на HUD |
+| `/bossquest` | Взять/сдать испытание героя |
+| `/delivery` | Взять/сдать задание Торговца |
 
-**Права:** `voidrp.dailyquests.admin`, `voidrp.dailyquests.use`
+---
 
-## NPC интеграция
+## 🔗 Связанные репозитории
 
-Плагин реагирует на клик по NPC с именем из списка `npc-names` / `delivery-npc-names`.
-Совместим с CitizensCMD: `/npc command add -p dailyquest`.
+| Репо | Связь |
+|---|---|
+| [minecraft-backend](https://github.com/VOIDRP-MINECRAFT/minecraft-backend) | Хранит прогресс квестов |
+| [voidrp-battlepass](https://github.com/VOIDRP-MINECRAFT/voidrp-battlepass) | Получает XP из квестов, расширяет пул |
+| [voidrp-gamesync-plugin](https://github.com/VOIDRP-MINECRAFT/voidrp-gamesync-plugin) | Рыночные торги засчитываются в квесты |
 
-## Архитектура
+---
 
-```
-VoidRpDailyQuestsPlugin.java   — точка входа
-quest/
-  QuestPool.java               — пул шаблонов квестов
-  QuestStorage.java            — персистентность прогресса
-  QuestType.java               — типы квестов (убийство, добыча, крафт, …)
-  ActiveQuest.java             — активный квест игрока
-delivery/
-  DeliveryQuestPool.java       — пул заданий доставки
-  DeliveryQuestStorage.java    — персистентность
-listener/
-  QuestProgressListener.java   — отслеживание событий игрока
-  NpcInteractListener.java     — открытие GUI по клику на NPC
-```
+<div align="center">
+<a href="https://void-rp.ru">🌐 Сайт</a> ·
+<a href="https://github.com/VOIDRP-MINECRAFT">🏠 Организация</a>
+</div>
