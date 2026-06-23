@@ -1,0 +1,41 @@
+name: VoidRpDailyQuests
+version: ${version}
+main: ru.voidrp.dailyquests.VoidRpDailyQuestsPlugin
+api-version: "1.21"
+softdepend:
+  - Vault
+  - VoidRpGameSync
+  - VoidRpModSell
+  - VoidRpBattlePass
+
+commands:
+  dailyquest:
+    description: Открыть ежедневные квесты
+    usage: /dailyquest
+    aliases: [dq, quests, квесты]
+  dqadmin:
+    description: Администрирование ежедневных квестов
+    usage: /dqadmin <reset <player>|info <player>>
+    permission: voidrp.dailyquests.admin
+  bossquest:
+    description: Открыть Испытание Героя (1 квест на 3 дня)
+    usage: /bossquest
+    aliases: [bq, испытание]
+  bqadmin:
+    description: Администрирование испытаний
+    usage: /bqadmin <reset <player>|info <player>>
+    permission: voidrp.dailyquests.admin
+  delivery:
+    description: Открыть задание Торговца Артефактами
+    usage: /delivery
+    aliases: [del, торговец]
+  questtrack:
+    description: Закрепить/открепить квест на экране
+    usage: /questtrack
+    aliases: [qt, track]
+
+permissions:
+  voidrp.dailyquests.admin:
+    default: op
+  voidrp.dailyquests.use:
+    default: true
