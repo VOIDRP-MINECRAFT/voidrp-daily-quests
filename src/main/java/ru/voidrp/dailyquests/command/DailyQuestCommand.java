@@ -5,6 +5,7 @@ import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.java.JavaPlugin;
 import ru.voidrp.dailyquests.gui.QuestGui;
 import ru.voidrp.dailyquests.player.DeliveryQuestStorage;
 import ru.voidrp.dailyquests.player.HardQuestStorage;
@@ -16,6 +17,9 @@ public final class DailyQuestCommand implements CommandExecutor {
     private final QuestStorage         storage;
     private final HardQuestStorage     hard;
     private final DeliveryQuestStorage delivery;
+    private JavaPlugin plugin;
+
+    public void setPlugin(JavaPlugin plugin) { this.plugin = plugin; }
 
     public DailyQuestCommand(QuestStorage storage, HardQuestStorage hard, DeliveryQuestStorage delivery) {
         this.storage  = storage;
@@ -34,8 +38,10 @@ public final class DailyQuestCommand implements CommandExecutor {
             return true;
         }
 
-        PlayerQuestState state = storage.get(player.getUniqueId());
-        player.openInventory(QuestGui.build(state.quests));
+        if (!tryOpenWebGui(player)) {
+            PlayerQuestState state = storage.get(player.getUniqueId());
+            player.openInventory(QuestGui.build(state.quests));
+        }
         return true;
     }
 
@@ -86,5 +92,21 @@ public final class DailyQuestCommand implements CommandExecutor {
             default -> sender.sendMessage("§eНеизвестная команда. Используй: reload | reset | info");
         }
         return true;
+    }
+
+    private boolean tryOpenWebGui(Player player) {
+        if (plugin == null) return false;
+        if (!plugin.getConfig().getBoolean("webgui.enabled", false)) return false;
+        String url = plugin.getConfig().getString("webgui.quests-url", "https://void-rp.ru/game-ui/quests");
+        try {
+            org.bukkit.plugin.Plugin gsPlugin = Bukkit.getPluginManager().getPlugin("VoidRpGameSync");
+            if (gsPlugin == null || !gsPlugin.isEnabled()) return false;
+            Object bridgeService = gsPlugin.getClass().getMethod("getWebGuiBridgeService").invoke(gsPlugin);
+            if (bridgeService == null) return false;
+            bridgeService.getClass().getMethod("openGui", Player.class, String.class).invoke(bridgeService, player, url);
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 }

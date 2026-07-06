@@ -69,6 +69,7 @@ public final class VoidRpDailyQuestsPlugin extends JavaPlugin {
 
         // ── Commands ──
         DailyQuestCommand dqCmd = new DailyQuestCommand(dailyStorage, hardStorage, deliveryStorage);
+        dqCmd.setPlugin(this);
         getCommand("dailyquest").setExecutor(dqCmd);
         getCommand("dqadmin").setExecutor(dqCmd);
 

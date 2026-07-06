@@ -21,3 +21,8 @@ npc-names:
 # NPC имена которые открывают задания торговца
 delivery-npc-names:
   - "§5Торговец Артефактами"
+
+# WebGUI integration — открывать /dq через браузер в игре
+webgui:
+  enabled: false
+  quests-url: "https://void-rp.ru/game-ui/quests"
