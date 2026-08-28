@@ -61,7 +61,7 @@ public final class QuestProgressListener implements Listener {
     @EventHandler(priority = EventPriority.MONITOR)
     public void onJoin(PlayerJoinEvent e) {
         Player player = e.getPlayer();
-        boolean fresh = storage.ensureToday(player.getUniqueId());
+        boolean fresh = storage.ensureToday(player.getUniqueId(), ru.voidrp.dailyquests.NationResearchBonus.extraQuestSlots(player));
         if (fresh) {
             player.sendMessage(color(newQuestsMsg));
         }
@@ -154,8 +154,11 @@ public final class QuestProgressListener implements Listener {
 
         int slot = e.getRawSlot();
 
+        PlayerQuestState state = storage.get(player.getUniqueId());
+        int count = Math.min(state.quests.size(), QuestGui.MAX_SLOTS);
+
         // Shift+Click on quest item slot = toggle tracker
-        int[] questSlots = {10, 13, 16};
+        int[] questSlots = QuestGui.questSlots(count);
         for (int i = 0; i < questSlots.length; i++) {
             if (questSlots[i] == slot && e.getClick() == ClickType.SHIFT_LEFT) {
                 QuestTracker.toggle(player, QuestTracker.Mode.DAILY, storage, hard, delivery);
@@ -163,14 +166,13 @@ public final class QuestProgressListener implements Listener {
             }
         }
 
-        int[] claimSlots = QuestGui.claimSlots();
+        int[] claimSlots = QuestGui.claimSlots(count);
         int questIndex = -1;
         for (int i = 0; i < claimSlots.length; i++) {
             if (claimSlots[i] == slot) { questIndex = i; break; }
         }
         if (questIndex < 0) return;
 
-        PlayerQuestState state = storage.get(player.getUniqueId());
         if (questIndex >= state.quests.size()) return;
         ActiveQuest q = state.quests.get(questIndex);
 

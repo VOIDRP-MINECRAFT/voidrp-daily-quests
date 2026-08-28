@@ -70,7 +70,15 @@ public final class VoidRpDailyQuestsPlugin extends JavaPlugin {
         // ── Commands ──
         DailyQuestCommand dqCmd = new DailyQuestCommand(dailyStorage, hardStorage, deliveryStorage);
         dqCmd.setPlugin(this);
+        dqCmd.setEconomy(economy);
         getCommand("dailyquest").setExecutor(dqCmd);
+
+        // Keep the WebGUI's daily-quest snapshot fresh (push every 60s for online players).
+        if (getConfig().getBoolean("webgui.enabled", false)) {
+            getServer().getScheduler().runTaskTimer(this, () -> {
+                for (Player p : Bukkit.getOnlinePlayers()) QuestBackendSync.push(this, dailyStorage, p);
+            }, 20L * 20, 20L * 60);
+        }
         getCommand("dqadmin").setExecutor(dqCmd);
 
         BossQuestCommand bqCmd = new BossQuestCommand(hardStorage);
@@ -88,7 +96,7 @@ public final class VoidRpDailyQuestsPlugin extends JavaPlugin {
 
         // ── Load quests for already-online players ──
         for (Player p : Bukkit.getOnlinePlayers()) {
-            dailyStorage.ensureToday(p.getUniqueId());
+            dailyStorage.ensureToday(p.getUniqueId(), NationResearchBonus.extraQuestSlots(p));
             hardStorage.ensureCurrentPeriod(p.getUniqueId());
             deliveryStorage.ensureCurrentPeriod(p.getUniqueId());
         }
@@ -102,7 +110,7 @@ public final class VoidRpDailyQuestsPlugin extends JavaPlugin {
                 if (h == resetHour && lastCheckedHour != resetHour) {
                     lastCheckedHour = h;
                     for (Player p : Bukkit.getOnlinePlayers()) {
-                        if (dailyStorage.ensureToday(p.getUniqueId()))
+                        if (dailyStorage.ensureToday(p.getUniqueId(), NationResearchBonus.extraQuestSlots(p)))
                             p.sendMessage(color(newQuestsMsg));
                         if (hardStorage.ensureCurrentPeriod(p.getUniqueId()))
                             p.sendMessage("§4§l⚔ §cНовое Испытание Героя! Используй /bq");

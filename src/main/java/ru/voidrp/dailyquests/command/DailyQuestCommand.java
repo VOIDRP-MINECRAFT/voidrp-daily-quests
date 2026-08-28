@@ -6,11 +6,15 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
+import net.milkbowl.vault.economy.Economy;
+import ru.voidrp.dailyquests.QuestBackendSync;
+import ru.voidrp.dailyquests.VoidRpDailyQuestsPlugin;
 import ru.voidrp.dailyquests.gui.QuestGui;
 import ru.voidrp.dailyquests.player.DeliveryQuestStorage;
 import ru.voidrp.dailyquests.player.HardQuestStorage;
 import ru.voidrp.dailyquests.player.PlayerQuestState;
 import ru.voidrp.dailyquests.player.QuestStorage;
+import ru.voidrp.dailyquests.quest.ActiveQuest;
 
 public final class DailyQuestCommand implements CommandExecutor {
 
@@ -18,8 +22,10 @@ public final class DailyQuestCommand implements CommandExecutor {
     private final HardQuestStorage     hard;
     private final DeliveryQuestStorage delivery;
     private JavaPlugin plugin;
+    private Economy economy;
 
     public void setPlugin(JavaPlugin plugin) { this.plugin = plugin; }
+    public void setEconomy(Economy economy) { this.economy = economy; }
 
     public DailyQuestCommand(QuestStorage storage, HardQuestStorage hard, DeliveryQuestStorage delivery) {
         this.storage  = storage;
@@ -38,11 +44,45 @@ public final class DailyQuestCommand implements CommandExecutor {
             return true;
         }
 
+        // /dailyquest claim <index> — used by the WebGUI (via a whitelisted web action)
+        // to claim a completed daily quest without opening the chest GUI.
+        if (args.length >= 2 && args[0].equalsIgnoreCase("claim")) {
+            handleClaim(player, args[1]);
+            return true;
+        }
+
         if (!tryOpenWebGui(player)) {
             PlayerQuestState state = storage.get(player.getUniqueId());
             player.openInventory(QuestGui.build(state.quests));
         }
         return true;
+    }
+
+    private void handleClaim(Player player, String indexArg) {
+        int index;
+        try {
+            index = Integer.parseInt(indexArg);
+        } catch (NumberFormatException e) {
+            player.sendMessage("§cНеверный номер квеста.");
+            return;
+        }
+        PlayerQuestState state = storage.get(player.getUniqueId());
+        if (index < 0 || index >= state.quests.size()) {
+            player.sendMessage("§cКвест не найден.");
+            return;
+        }
+        ActiveQuest q = state.quests.get(index);
+        if (!q.isClaimable()) {
+            player.sendMessage("§cЭтот квест ещё нельзя забрать.");
+            return;
+        }
+        q.rewardClaimed = true;
+        storage.save(player.getUniqueId());
+        if (economy != null) economy.depositPlayer(player, q.moneyReward);
+        player.giveExp(q.expReward);
+        player.sendMessage("§a§l✦ §aНаграда получена! §6+" + (int) q.moneyReward + " монет §7+ §b" + q.expReward + " опыта");
+        VoidRpDailyQuestsPlugin.fireBattlePassHook("onDailyQuestClaim", player);
+        if (plugin != null) QuestBackendSync.push(plugin, storage, player);
     }
 
     private boolean handleAdmin(CommandSender sender, String[] args) {
@@ -61,7 +101,7 @@ public final class DailyQuestCommand implements CommandExecutor {
                 delivery.reload();
                 // re-load online players
                 for (Player p : Bukkit.getOnlinePlayers()) {
-                    storage.ensureToday(p.getUniqueId());
+                    storage.ensureToday(p.getUniqueId(), ru.voidrp.dailyquests.NationResearchBonus.extraQuestSlots(p));
                     hard.ensureCurrentPeriod(p.getUniqueId());
                     delivery.ensureCurrentPeriod(p.getUniqueId());
                 }
@@ -75,7 +115,7 @@ public final class DailyQuestCommand implements CommandExecutor {
                 state.lastResetDate = ""; // force regeneration on next ensureToday
                 state.quests.clear();
                 storage.save(target.getUniqueId());
-                boolean fresh = storage.ensureToday(target.getUniqueId());
+                boolean fresh = storage.ensureToday(target.getUniqueId(), ru.voidrp.dailyquests.NationResearchBonus.extraQuestSlots(target));
                 sender.sendMessage("§aКвесты для §f" + target.getName() + " §aсброшены и обновлены.");
             }
             case "info" -> {

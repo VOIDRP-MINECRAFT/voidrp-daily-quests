@@ -16,9 +16,26 @@ public final class QuestGui {
 
     public static final String TITLE = "§6§lЕжедневные квесты";
 
-    // Slots for quests in a 27-slot (3-row) chest
-    private static final int[] QUEST_SLOTS = {10, 13, 16};
-    private static final int[] CLAIM_SLOTS  = {19, 22, 25};
+    // Max quests the 27-slot GUI supports (3 base + nation-research extra slots).
+    public static final int MAX_SLOTS = 4;
+
+    /** Quest icon slots for {@code count} quests, centred in the middle row. */
+    public static int[] questSlots(int count) {
+        return switch (Math.max(1, Math.min(count, MAX_SLOTS))) {
+            case 1 -> new int[]{13};
+            case 2 -> new int[]{11, 15};
+            case 4 -> new int[]{10, 12, 14, 16};
+            default -> new int[]{10, 13, 16};
+        };
+    }
+
+    /** Claim button slots directly under each quest icon. */
+    public static int[] claimSlots(int count) {
+        int[] q = questSlots(count);
+        int[] c = new int[q.length];
+        for (int i = 0; i < q.length; i++) c[i] = q[i] + 9; // row directly below
+        return c;
+    }
 
     private QuestGui() {}
 
@@ -29,10 +46,13 @@ public final class QuestGui {
         ItemStack border = glass(Material.GRAY_STAINED_GLASS_PANE, " ");
         for (int i = 0; i < 27; i++) inv.setItem(i, border);
 
-        for (int i = 0; i < Math.min(quests.size(), QUEST_SLOTS.length); i++) {
+        int shown = Math.min(quests.size(), MAX_SLOTS);
+        int[] questSlots = questSlots(shown);
+        int[] claimSlots = claimSlots(shown);
+        for (int i = 0; i < shown; i++) {
             ActiveQuest q = quests.get(i);
-            inv.setItem(QUEST_SLOTS[i], questItem(q));
-            inv.setItem(CLAIM_SLOTS[i], claimItem(q));
+            inv.setItem(questSlots[i], questItem(q));
+            inv.setItem(claimSlots[i], claimItem(q));
         }
         return inv;
     }
@@ -103,6 +123,4 @@ public final class QuestGui {
             case MOD_SELL    -> Material.NETHER_STAR;
         };
     }
-
-    public static int[] claimSlots() { return CLAIM_SLOTS; }
 }

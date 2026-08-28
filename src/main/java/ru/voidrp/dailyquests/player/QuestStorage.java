@@ -51,6 +51,15 @@ public final class QuestStorage {
 
     /** Ensures player has quests for today, generating if needed. Returns true if new quests were generated. */
     public boolean ensureToday(UUID uuid) {
+        return ensureToday(uuid, 0);
+    }
+
+    /**
+     * Ensures player has quests for today. {@code extraSlots} adds nation-research
+     * bonus quests (e.g. "Биржа труда") on top of the configured daily count.
+     * Returns true if new quests were generated.
+     */
+    public boolean ensureToday(UUID uuid, int extraSlots) {
         String today = LocalDate.now().format(DATE_FMT);
         PlayerQuestState state = get(uuid);
         if (today.equals(state.lastResetDate)) return false;
@@ -58,8 +67,9 @@ public final class QuestStorage {
         state.lastResetDate = today;
         state.quests.clear();
 
+        int count = Math.min(questsPerDay + Math.max(0, extraSlots), ru.voidrp.dailyquests.gui.QuestGui.MAX_SLOTS);
         long seed = uuid.getLeastSignificantBits() ^ today.hashCode();
-        List<QuestTemplate> templates = QuestPool.pickRandom(questsPerDay, seed);
+        List<QuestTemplate> templates = QuestPool.pickRandom(count, seed);
         for (QuestTemplate t : templates) {
             ActiveQuest q = ActiveQuest.from(t);
             q.moneyReward = Math.round(q.moneyReward); // no fractional coins
