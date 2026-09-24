@@ -1,6 +1,6 @@
 plugins {
     java
-    id("com.gradleup.shadow") version "8.3.10"
+    id("com.gradleup.shadow") version "8.3.11"
 }
 
 group = "ru.voidrp"
@@ -20,7 +20,7 @@ dependencies {
     compileOnly("com.github.MilkBowl:VaultAPI:1.7") {
         isTransitive = false
     }
-    implementation("com.google.code.gson:gson:2.11.0")
+    implementation("com.google.code.gson:gson:2.14.0")
     compileOnly(files("../voidrp_gamesync_plugin/build/libs/voidrp-game-sync-paper-1.4.0-all.jar"))
     compileOnly(files("../voidrp_mod_sell/build/libs/voidrp-mod-sell-1.0.0-all.jar"))
 }
