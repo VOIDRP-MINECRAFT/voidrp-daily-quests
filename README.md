@@ -1,12 +1,29 @@
-# 📜 VoidRP Daily Quests
+<p align="center"><img src=".github/assets/banner.jpg" alt="VoidRP Daily Quests" width="100%"></p>
 
-> Paper-плагин заданий VoidRP: три ежедневных квеста, трёхдневное «Испытание Героя» и недельные
-> поручения Торговца Артефактами. Прогресс виден в WebGUI, выполненные квесты дают опыт боевого пропуска.
+<div align="center">
 
 ![Paper](https://img.shields.io/badge/Paper%20%2F%20Mohist-1.21.1-00AF54)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
 [![Build](https://github.com/VOIDRP-MINECRAFT/voidrp-daily-quests/actions/workflows/build.yml/badge.svg)](https://github.com/VOIDRP-MINECRAFT/voidrp-daily-quests/actions/workflows/build.yml)
 ![License](https://img.shields.io/badge/license-proprietary-red)
+
+</div>
+
+> Paper-плагин заданий VoidRP: три ежедневных квеста, трёхдневное «Испытание Героя» и недельные
+> поручения Торговца Артефактами. Прогресс виден в WebGUI, выполненные квесты дают опыт боевого пропуска.
+
+---
+
+## 📸 Как это выглядит
+
+<table>
+<tr>
+<td width="50%"><img src=".github/assets/screenshots/game-ui-quests.jpg" alt="Ежедневные квесты в WebGUI"><br><sub>Ежедневные квесты в WebGUI</sub></td>
+<td width="50%"><img src=".github/assets/screenshots/game-ui-battlepass.jpg" alt="Задания дня в боевом пропуске"><br><sub>Задания дня в боевом пропуске</sub></td>
+</tr>
+</table>
+
+<sub>Страницы [voidrp-site](https://github.com/VOIDRP-MINECRAFT/voidrp-site) на демо-данных; в игре открываются через WebGUI.</sub>
 
 ---
 
