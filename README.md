@@ -1,52 +1,75 @@
 # 📜 VoidRP Daily Quests
 
-> Paper 1.21.1 плагин — ежедневные квесты, испытания героя и задания Торговца Артефактами.
+> Paper-плагин заданий VoidRP: три ежедневных квеста, трёхдневное «Испытание Героя» и недельные
+> поручения Торговца Артефактами. Прогресс виден в WebGUI, выполненные квесты дают опыт боевого пропуска.
 
-![Paper](https://img.shields.io/badge/Paper-1.21.1-00AF54)
-![Kotlin](https://img.shields.io/badge/Kotlin-2.x-7F52FF?logo=kotlin&logoColor=white)
+![Paper](https://img.shields.io/badge/Paper%20%2F%20Mohist-1.21.1-00AF54)
 ![Java](https://img.shields.io/badge/Java-21-ED8B00?logo=openjdk&logoColor=white)
-![Vault](https://img.shields.io/badge/soft--depend-Vault-yellow)
+[![Build](https://github.com/VOIDRP-MINECRAFT/voidrp-daily-quests/actions/workflows/build.yml/badge.svg)](https://github.com/VOIDRP-MINECRAFT/voidrp-daily-quests/actions/workflows/build.yml)
 ![License](https://img.shields.io/badge/license-proprietary-red)
 
 ---
 
 ## 🗺️ Место в экосистеме
 
-```
-  Игрок выполняет действие в игре
-        │
-  voidrp-daily-quests
-        │ QuestCompleteEvent
-        ├──► voidrp-battlepass (XP за выполнение квеста)
-        │
-        │ POST /api/v1/daily-quests/* (X-Game-Auth-Secret)
-        ▼
-  minecraft-backend ←→ voidrp-site
+```mermaid
+flowchart LR
+    subgraph GAME["Действия игрока"]
+        direction TB
+        A1["⚔️ Убийства · ⛏️ добыча · 🎣 рыбалка<br/>🐄 разведение · 🛠️ крафт · 📦 сбор"]
+        A2["💱 Сделки на рынке<br/>voidrp-gamesync-plugin"]
+        A3["🪙 Продажа /modsell<br/>voidrp-mod-sell"]
+    end
+    DQ["📜 voidrp-daily-quests"]
+    BP["🏆 voidrp-battlepass"]
+    GS["voidrp-gamesync-plugin<br/>BackendClient"]
+    B[("minecraft-backend")]
+    W["🖥️ WebGUI<br/>void-rp.ru/game-ui/quests"]
+
+    A1 & A2 & A3 --> DQ
+    DQ -- "награда забрана →<br/>опыт пропуска" --> BP
+    DQ -- "снимок квестов" --> GS --> B --> W
+    GS -. "исследование «Биржа труда»:<br/>+слоты квестов" .-> DQ
 ```
 
 ---
 
-## ✨ Возможности
+## ✨ Три вида заданий
 
-### Ежедневные квесты
-- Каждый день игрок получает **N случайных квестов** из настраиваемого пула
-- Типы заданий: убийства, добыча, крафт, торговля, путешествие, доставка
-- Автосброс квестов в заданный час суток (настраивается)
-- Денежные и предметные награды через Vault
+```mermaid
+flowchart TB
+    subgraph D["📅 Ежедневные — /dq"]
+        D1["3 квеста в день из пула<br/>сброс в reset-hour"]
+    end
+    subgraph H["🗡️ Испытание Героя — /bossquest"]
+        H1["1 сложный квест на 3 дня<br/>повышенная награда"]
+    end
+    subgraph T["🧳 Торговец Артефактами — /delivery"]
+        T1["1 поручение на 7 дней<br/>принести нужные предметы"]
+    end
+    D1 & H1 & T1 --> R(["💰 Награда: монеты (Vault), предметы, опыт пропуска"])
+```
 
-### Испытание Героя (`/bossquest`)
-- Один сложный квест на **3 дня** с повышенной наградой
-- Уникальный пул сложных заданий
-- Отдельный NPC для получения и сдачи
+- **Типы целей:** `KILL`, `COLLECT`, `MINE`, `FISH`, `BREED`, `CRAFT`, `MARKET_SELL`, `MARKET_BUY`
+  и продажи через `/modsell`.
+- **Бонус нации:** исследование «Биржа труда» даёт дополнительные слоты ежедневных квестов.
+- **Трекер:** `/questtrack` закрепляет активный квест на экране.
+- **NPC:** «Квестодатель» открывает ежедневные квесты, «Торговец Артефактами» — поручения
+  (или команда через CitizensCMD: `/npc command add -p dailyquest`).
+- **WebGUI:** при `webgui.enabled: true` `/dq` открывает страницу квестов поверх игры.
 
-### Торговец Артефактами (`/delivery`)
-- Задания на доставку конкретных предметов в определённое место
-- Ротация заданий по таймеру
+---
 
-### Интерфейс
-- Закрепление активного квеста на экране (`/questtrack`)
-- GUI через NPC
-- Команды для всех типов заданий
+## ⌨️ Команды
+
+| Команда | Кому | Что делает |
+|---|---|---|
+| `/dailyquest` (`/dq`, `/quests`, `/квесты`) | игрок | Ежедневные квесты |
+| `/bossquest` (`/bq`, `/испытание`) | игрок | Испытание Героя |
+| `/delivery` (`/del`, `/торговец`) | игрок | Поручение Торговца Артефактами |
+| `/questtrack` (`/qt`, `/track`) | игрок | Закрепить/открепить квест на экране |
+| `/dqadmin reset\|info <игрок>` | `voidrp.dailyquests.admin` | Администрирование ежедневных квестов |
+| `/bqadmin reset\|info <игрок>` | `voidrp.dailyquests.admin` | Администрирование испытаний |
 
 ---
 
@@ -56,33 +79,42 @@
 |---|---|
 | Paper / Mohist | 1.21.1 |
 | Java | 21 |
-| Vault | опционально (денежные награды) |
+| Vault, VoidRpGameSync, VoidRpModSell, VoidRpBattlePass | soft-depend |
 
 ---
 
-## 🚀 Сборка и установка
+## 🚀 Сборка
+
+Плагин компилируется против собранных jar `voidrp-gamesync-plugin` и `voidrp-mod-sell`, поэтому
+репозитории кладутся рядом — так же делает CI:
 
 ```bash
-cd voidrp_daily_quests
-./gradlew shadowJar
-# → build/libs/voidrp-daily-quests-*.jar
+git clone https://github.com/VOIDRP-MINECRAFT/voidrp-gamesync-plugin voidrp_gamesync_plugin
+git clone https://github.com/VOIDRP-MINECRAFT/voidrp-mod-sell voidrp_mod_sell
+git clone https://github.com/VOIDRP-MINECRAFT/voidrp-daily-quests voidrp_daily_quests
+(cd voidrp_gamesync_plugin && ./gradlew shadowJar)
+(cd voidrp_mod_sell && ./gradlew shadowJar)
+(cd voidrp_daily_quests && ./gradlew build)
 ```
-
-1. Скопировать jar в `plugins/`
-2. Перезапустить сервер
-3. Настроить `plugins/VoidRpDailyQuests/config.yml`
-4. Задать пул заданий в `quests.yml`
 
 ---
 
-## 🛠️ Команды
+## ⚙️ Конфигурация
 
-| Команда | Описание |
-|---|---|
-| `/quests` | Открыть список своих квестов |
-| `/questtrack` | Закрепить/открепить активный квест на HUD |
-| `/bossquest` | Взять/сдать испытание героя |
-| `/delivery` | Взять/сдать задание Торговца |
+`plugins/VoidRpDailyQuests/config.yml`:
+
+```yaml
+quests-per-day: 3
+reset-hour: 0                 # час сброса по времени сервера
+reward-multiplier: 1.0        # множитель наград в монетах и опыте
+npc-names:
+  - "§6Квестодатель"
+delivery-npc-names:
+  - "§5Торговец Артефактами"
+webgui:
+  enabled: false
+  quests-url: "https://void-rp.ru/game-ui/quests"
+```
 
 ---
 
@@ -90,9 +122,10 @@ cd voidrp_daily_quests
 
 | Репо | Связь |
 |---|---|
-| [minecraft-backend](https://github.com/VOIDRP-MINECRAFT/minecraft-backend) | Хранит прогресс квестов |
-| [voidrp-battlepass](https://github.com/VOIDRP-MINECRAFT/voidrp-battlepass) | Получает XP из квестов, расширяет пул |
-| [voidrp-gamesync-plugin](https://github.com/VOIDRP-MINECRAFT/voidrp-gamesync-plugin) | Рыночные торги засчитываются в квесты |
+| [voidrp-battlepass](https://github.com/VOIDRP-MINECRAFT/voidrp-battlepass) | Опыт пропуска за каждую забранную награду (`BattlePassHooks.onDailyQuestClaim / onBossQuestClaim / onDeliveryQuestClaim`) |
+| [voidrp-gamesync-plugin](https://github.com/VOIDRP-MINECRAFT/voidrp-gamesync-plugin) | Сделки на рынке, исследования наций, отправка снимка квестов на бэкенд |
+| [voidrp-mod-sell](https://github.com/VOIDRP-MINECRAFT/voidrp-mod-sell) | Продажи модовых предметов засчитываются в квесты |
+| [voidrp-site](https://github.com/VOIDRP-MINECRAFT/voidrp-site) | Страница `/game-ui/quests` |
 
 ---
 
